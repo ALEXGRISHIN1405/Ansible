@@ -1,0 +1,49 @@
+---
+
+  - name: Обновление списка пакетов
+    apt:
+      update_cache: yes
+
+  - name: Установка необходимых пакетов
+    apt:
+      name:
+        - vim
+        - git
+        - curl
+        - ufw
+        - htop
+        - apache2
+      state: present
+
+  - name: Настройка брандмауэра
+    ufw:
+      state: enabled
+      rule: allow
+      name: OpenSSH
+
+  - name: Разрешить HTTP и HTTPS трафик и подключение к Flask
+    ufw:
+      rule: allow
+      port: "{{ item }}"
+    loop:
+      - '80'
+      - '443'
+      - '5000'
+
+  - name: Создание нового пользователя
+    user:
+      name: test
+      password: "{{ '123' | password_hash('sha512') }}"
+      shell: /bin/bash
+      groups: sudo
+      state: present
+
+  - name: Конфигурация SSH
+    template:
+      src: sshd_config
+      dest: /etc/ssh/sshd_config
+
+  - name: Перезапуск SSH
+    systemd:
+      name: ssh
+      state: restarted

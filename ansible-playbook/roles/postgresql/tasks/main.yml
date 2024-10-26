@@ -1,0 +1,82 @@
+---
+- name: Установка необходимых пакетов для PostgreSQL
+  apt:
+    name: python3-psycopg2
+    state: present
+
+- name: Добавление GPG ключа для PostgreSQL
+  apt_key:
+    url: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+    state: present
+
+- name: Добавление репозитория PostgreSQL
+  apt_repository:
+    repo: "deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main"
+    state: present
+    update_cache: yes
+
+- name: Установка PostgreSQL 16
+  apt:
+    name: postgresql-16
+    state: present
+    update_cache: yes
+
+- name: Настройка pg_hba.conf первый раз
+  template:
+    src: pg_hba_first.conf
+    dest: /etc/postgresql/16/main/pg_hba.conf
+
+- name: Перезапуск PostgreSQL
+  systemd:
+    name: postgresql
+    state: restarted
+
+- name: Изменение пароля пользователя postgres
+  postgresql_user:
+    name: postgres
+    password: postgres
+    state: present
+
+- name: Настройка pg_hba.conf второй раз
+  template:
+    src: pg_hba.conf
+    dest: /etc/postgresql/16/main/pg_hba.conf
+
+- name: Перезапуск PostgreSQL
+  systemd:
+    name: postgresql
+    state: restarted
+
+- name: Создание базы данных
+  postgresql_db:
+    name: test
+    state: present
+    login_user: postgres
+    login_password: postgres
+  
+- name: Удаление таблицы, если она существует
+  postgresql_query:
+    db: test
+    query: "DROP TABLE IF EXISTS test;"
+    login_user: postgres
+    login_password: postgres
+
+- name: Создание таблицы
+  postgresql_query:
+    db: test
+    query: |
+      CREATE TABLE test (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100),
+        age INTEGER
+      );
+    login_user: postgres
+    login_password: postgres
+        
+- name: Вставка данных в таблицу
+  postgresql_query:
+    db: test
+    query: "INSERT INTO test (name, age) VALUES ('Alice', 30), ('Bob', 25), ('Charlie', 35);"
+    login_user: postgres
+    login_password: postgres
+

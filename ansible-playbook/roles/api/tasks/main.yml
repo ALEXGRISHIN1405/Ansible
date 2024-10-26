@@ -1,0 +1,24 @@
+---
+- name: Установка необходимых пакетов для API
+  apt:
+    name:
+      - python3
+      - python3-pip
+    state: present
+
+- name: Установка Flask
+  pip:
+    name: Flask
+
+- name: Создание директории для API
+  file:
+    path: /opt/myapi
+    state: directory
+
+- name: Развертывание приложения API
+  template:
+    src: app.py
+    dest: /opt/myapi/app.py
+
+- name: Запуск API
+  command: nohup python3 /opt/myapi/app.py > /opt/myapi/app.log 2>&1 &
