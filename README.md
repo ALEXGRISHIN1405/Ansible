@@ -32,18 +32,22 @@
 Для отработки сценария с хостовой машины необходимо проделать следующие шаги:
 
 1) Установить две машины Ubuntu24.04 и Debian 11, на них установить SSH и убедиться, что мы можем с Ubuntu подключиться к пользователю Debian 11, который входит в группу sudo
+   
 2) Установить Ansible на машину Ubuntu24.04
      ```bash
    apt install ansible-core
      ```
+     
 3) Настроить файл inventory, вписав в него информацию по следующему шаблону:
      ```bash
    ip_debian_11 ansible_ssh_user=user_name_for_the_ssh_connection ansible_ssh_pass=user_password_for_connecting_via_ssh ansible_become_pass=password_for_privilege_escalation
      ```
+     
 4) Запустить сценарий Ansible
      ```bash
    ansible-playbook -i inventory playbook.yml
      ```
+     
 5) После выполнения задачи "Запуск API" нажать сочетание клавиш Ctrl + C для завершения сценария
 
 После выполнения этих шагов машина Debian 11 будет сконфигурирована, на ней будетнастроен PostgreSQL и мы сможем по адресу http://ip_сервера:5000/api/data, получить информацию из таблицы в базе данных
